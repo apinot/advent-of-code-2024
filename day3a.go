@@ -72,7 +72,6 @@ func createMulFromStrings(x string, y string) Mul {
 }
 
 func doLogic(muls []Mul) int {
-	fmt.Printf("%v", muls)
 	result := 0
 	for _, mul := range muls {
 		result = result + (mul.x * mul.y)
