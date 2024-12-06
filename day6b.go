@@ -75,11 +75,35 @@ type Guard struct {
 	dir Dir
 }
 
+func cloneGuard(g Guard) Guard {
+	return Guard{Pos{g.pos.row, g.pos.col}, Dir{g.dir.row, g.dir.col}}
+}
+
 type Grid struct {
 	elements  [][]bool
 	movements [][]Dir
 	nbRows    int
 	nbCols    int
+}
+
+func cloneGrid(g Grid) Grid {
+	var e [][]bool
+	var m [][]Dir
+
+	for r := 0; r < g.nbRows; r++ {
+		var eRow []bool
+		var mRow []Dir
+
+		for c := 0; c < g.nbCols; c++ {
+			eRow = append(eRow, g.elements[r][c])
+			mRow = append(mRow, Dir{0, 0})
+		}
+
+		e = append(e, eRow)
+		m = append(m, mRow)
+	}
+
+	return Grid{e, m, g.nbRows, g.nbCols}
 }
 
 func isEmptyDir(d Dir) bool {
@@ -124,11 +148,27 @@ func parseInput(input string) (Grid, Guard) {
 }
 
 func doLogic(grid Grid, guard Guard) int {
-	dd(checkLoop(grid, guard))
+	nbLoops := 0
+
+	for r := 0; r < grid.nbRows; r++ {
+		for c := 0; c < grid.nbCols; c++ {
+			if !grid.elements[r][c] {
+				continue
+			}
+
+			tmpGrid := cloneGrid(grid)
+			tmpGrid.elements[r][c] = false
+			tmpGuard := cloneGuard(guard)
+
+			if checkLoop(tmpGrid, tmpGuard) {
+				nbLoops++
+			}
+		}
+	}
 
 	displayGrid(grid)
 
-	return 1
+	return nbLoops
 }
 
 func checkLoop(grid Grid, guard Guard) bool {
