@@ -124,13 +124,17 @@ func parseInput(input string) (Grid, Guard) {
 }
 
 func doLogic(grid Grid, guard Guard) int {
-	movements := 0
+	dd(checkLoop(grid, guard))
+
+	displayGrid(grid)
+
+	return 1
+}
+
+func checkLoop(grid Grid, guard Guard) bool {
 	move := true
 	for move {
-		if isEmptyDir(grid.movements[guard.pos.row][guard.pos.col]) {
-			movements++
-			grid.movements[guard.pos.row][guard.pos.col] = guard.dir
-		}
+		grid.movements[guard.pos.row][guard.pos.col] = Dir{guard.dir.row, guard.dir.col}
 
 		nextPos := getNextPosFromDir(guard.pos, guard.dir)
 
@@ -143,16 +147,19 @@ func doLogic(grid Grid, guard Guard) int {
 		// Can't move, so rotate to right
 		if !canMove(grid, nextPos) {
 			guard.dir = getNextDir(guard.dir)
+			grid.movements[guard.pos.row][guard.pos.col] = Dir{guard.dir.row, guard.dir.col}
 			continue
 		}
 
 		// Apply movement
 		guard.pos = nextPos
+		movementPosDir := grid.movements[guard.pos.row][guard.pos.col]
+		if !isEmptyDir(movementPosDir) && isSameDir(movementPosDir, guard.dir) {
+			return true
+		}
 	}
 
-	displayGrid(grid)
-
-	return movements
+	return false
 }
 
 func inGrid(grid Grid, pos Pos) bool {
