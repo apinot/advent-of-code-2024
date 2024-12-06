@@ -73,8 +73,13 @@ func parseInput(input string) ([]PageComparison, []ManualUpdate) {
 
 func doLogic(pageComparisons []PageComparison, manualUpdates []ManualUpdate) int {
 	pagesBeforeMap := getPagesBeforeMap(pageComparisons)
-	validsManualUpdates := keepValidManualUpdates(manualUpdates, pagesBeforeMap)
-	return sumMiddlePages(validsManualUpdates)
+	invalidsManualUpdates := keepInvalidManualUpdates(manualUpdates, pagesBeforeMap)
+
+	for _, imu := range invalidsManualUpdates {
+		sortManualUpdate(imu, pagesBeforeMap)
+	}
+
+	return sumMiddlePages(invalidsManualUpdates)
 }
 
 func getPagesBeforeMap(pageComparisons []PageComparison) map[int][]int {
@@ -88,10 +93,10 @@ func getPagesBeforeMap(pageComparisons []PageComparison) map[int][]int {
 	return pagesMap
 }
 
-func keepValidManualUpdates(manualsUpdates []ManualUpdate, pagesBeforeMaps map[int][]int) []ManualUpdate {
+func keepInvalidManualUpdates(manualsUpdates []ManualUpdate, pagesBeforeMaps map[int][]int) []ManualUpdate {
 	var valids []ManualUpdate
 	for _, mu := range manualsUpdates {
-		if isValidManualUpdate(mu, pagesBeforeMaps) {
+		if !isValidManualUpdate(mu, pagesBeforeMaps) {
 			valids = append(valids, mu)
 		}
 	}
@@ -141,4 +146,21 @@ func getMiddlePage(mu ManualUpdate) int {
 	nbPages := len(mu.pages)
 	middlePage := nbPages / 2
 	return mu.pages[middlePage]
+}
+
+func sortManualUpdate(manualUpdates ManualUpdate, pagesBeforeMaps map[int][]int) {
+	comparator := func(a int, b int) int {
+		aftersOfB := pagesBeforeMaps[b]
+		if slices.Contains(aftersOfB, a) {
+			return 1
+		}
+
+		aftersOfA := pagesBeforeMaps[a]
+		if slices.Contains(aftersOfA, b) {
+			return -1
+		}
+
+		return 0
+	}
+	slices.SortFunc(manualUpdates.pages, comparator)
 }
