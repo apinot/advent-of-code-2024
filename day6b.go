@@ -165,14 +165,12 @@ func doLogic(grid Grid, guard Guard) int {
 			}
 		}
 	}
-
-	displayGrid(grid)
-
 	return nbLoops
 }
 
 func checkLoop(grid Grid, guard Guard) bool {
 	move := true
+	nbMove := 0
 	for move {
 		grid.movements[guard.pos.row][guard.pos.col] = Dir{guard.dir.row, guard.dir.col}
 
@@ -197,6 +195,12 @@ func checkLoop(grid Grid, guard Guard) bool {
 		if !isEmptyDir(movementPosDir) && isSameDir(movementPosDir, guard.dir) {
 			return true
 		}
+
+		nbMove++
+		// If it move far far away, then its a loop ^^
+		if nbMove > 1000000 {
+			return true
+		}
 	}
 
 	return false
@@ -210,22 +214,4 @@ func inGrid(grid Grid, pos Pos) bool {
 
 func canMove(g Grid, p Pos) bool {
 	return g.elements[p.row][p.col]
-}
-
-func displayGrid(g Grid) {
-	for r := 0; r < g.nbRows; r++ {
-		str := ""
-		for c := 0; c < g.nbCols; c++ {
-			if !g.elements[r][c] {
-				str += string(OBSTRUCTIONS_RUNE)
-				continue
-			}
-			if !isEmptyDir(g.movements[r][c]) {
-				str += "X"
-				continue
-			}
-			str += "."
-		}
-		fmt.Println(str)
-	}
 }
